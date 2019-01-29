@@ -1,14 +1,15 @@
-import { NUM_ROWS, NUM_COLS } from '../constants.js';
-import { getRandomInt } from '../utils/math-utils.js';
+import { NUM_ROWS, NUM_COLS, NUM_ACTIVATE_CELLS } from '../constants.js';
+import { getRandomInt, getOrdinalNum } from '../utils/math-utils.js';
 import ReactionTimerGridView from './ReactionTimerGridView.js';
 
 class ReactionTimerGame {
   constructor() {
     this.view = null;
-    this.activeCellRow = null;
-    this.activeCellCol = null;
+    this.activeCellRows = Array(NUM_ACTIVATE_CELLS).fill(null);
+    this.activeCellCols = Array(NUM_ACTIVATE_CELLS).fill(null);
     this.currentStartTime = null;
     this.currentEndTime = null;
+    this.readctionTimes = null;
   }
 
   handleRoundStart() {
@@ -18,26 +19,43 @@ class ReactionTimerGame {
 
   startCycle() {
     this.currentStartTime = new Date().getTime(); // milliseconds
-    this.view.deactivateCell(this.activeCellRow, this.activeCellCol);
+    for (let i = 0; i < NUM_ACTIVATE_CELLS; i += 1) {
+      this.view.deactivateCell(this.activeCellRows[i], this.activeCellCols[i]);
+    }
     this.triggerRandomCell();
+    this.reactionTimes = 0;
   }
 
   triggerRandomCell() {
-    const randomRowIndex = getRandomInt(0, NUM_ROWS);
-    const randomColIndex = getRandomInt(0, NUM_COLS);
-    this.activeCellRow = randomRowIndex;
-    this.activeCellCol = randomColIndex;
-    this.view.activateCell(randomRowIndex, randomColIndex);
+    for (let i = 0; i < NUM_ACTIVATE_CELLS; i += 1) {
+      let randomRowIndex;
+      let randomColIndex;
+
+      do {
+        randomRowIndex = getRandomInt(0, NUM_ROWS);
+        randomColIndex = getRandomInt(0, NUM_COLS);
+      } while (this.activeCellRows.includes(randomRowIndex)
+        && this.activeCellCols.includes(randomColIndex));
+
+      this.activeCellRows[i] = randomRowIndex;
+      this.activeCellCols[i] = randomColIndex;
+      this.view.activateCell(randomRowIndex, randomColIndex);
+    }
   }
 
-  handleActiveCellSelected() {
-    this.view.deactivateCell(this.activeCellRow, this.activeCellCol);
+  handleActiveCellSelected(activeCellRow, activeCellCol) {
+    this.view.deactivateCell(activeCellRow, activeCellCol);
     this.calculateTime();
   }
 
   calculateTime() {
     this.currentEndTime = new Date().getTime();
-    console.log(this.currentEndTime - this.currentStartTime);
+    this.reactionTimes += 1;
+
+    console.log(`${getOrdinalNum(this.reactionTimes)} reaction: ${this.currentEndTime - this.currentStartTime}`);
+    if (this.reactionTimes === NUM_ACTIVATE_CELLS) {
+      console.log('----');
+    }
   }
 
   init() {
