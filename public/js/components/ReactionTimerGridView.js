@@ -28,6 +28,11 @@ class ReactionTimerGridView {
     return `${row}:${col}`;
   }
 
+  getCellPositionById(id) {
+    const [row, col] = id.split(':').map(x => parseInt(x, 10));
+    return [row, col];
+  }
+
   drawGrid() {
     const grid = document.querySelector('#container .grid');
 
@@ -62,8 +67,10 @@ class ReactionTimerGridView {
     }
   }
 
-  handleActiveCellClick() {
-    this.callbacks.handleActiveCellSelected();
+  handleActiveCellClick(event) {
+    const clickedCellId = event.target.id;
+    const [clickedCellRow, clickedCellCol] = this.getCellPositionById(clickedCellId);
+    this.callbacks.handleActiveCellSelected(clickedCellRow, clickedCellCol);
   }
 }
 
